@@ -1,0 +1,14 @@
+apply plugin: 'java'
+sourceSets {
+   main {
+      java {
+         srcDir 'src'
+      }
+   }
+}
+
+jar {
+   manifest {
+      attributes 'Main-Class': 'main.java.com.server.Server'
+   }
+}

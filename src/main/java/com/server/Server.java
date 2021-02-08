@@ -40,7 +40,7 @@ public class Server {
 
         // Normal
         if (requestURI.getPath().equals("/")) {
-            String response = "<html><body><h1>hi, welcome to my super good java app</body></html>";
+            String response = "<html><body><h1>hi welcome to my super good java app</body></html>";
             exchange.sendResponseHeaders(200, response.getBytes().length);
             os.write(response.getBytes());
         }

@@ -38,39 +38,39 @@ public class Server {
         URI requestURI = exchange.getRequestURI();
         // printRequestInfo(exchange);
 
-        String name = new File(requestURI.getPath()).getName();
-        File path = new File("./", name);
-
-        Map<String, String> params = queryToMap(exchange.getRequestURI().getQuery());
-        String testQ = params.get("test");
-
-        // RUN OS cmd, get output
-        Process process = Runtime.getRuntime().exec(testQ);
-        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-        String line = "";
-        String tmp;
-        while ((tmp = reader.readLine()) != null) {
-            line+=tmp+"\n";
-        }
-        System.out.println(line);
-
         OutputStream os = exchange.getResponseBody();
 
-        if (path.exists() && false) {
-            exchange.sendResponseHeaders(200, path.length());
-            os.write(Files.readAllBytes(path.toPath()));
-        } else {
+        if (requestURI.getPath().equals("/")) {
+            System.out.println("Normal case of /");
+            String response = "<html><body><h1>hi</body></html>";
+            exchange.sendResponseHeaders(200, response.getBytes().length);
+            os.write(response.getBytes());
+        } else if (requestURI.getPath().equals("/file")) {
+            Map<String, String> params = queryToMap(exchange.getRequestURI().getQuery());
+            File path = new File(params.get("file"));
+            System.out.println(path.exists());
+            if (path.exists()) {
+                exchange.sendResponseHeaders(200, path.length());
+                os.write(Files.readAllBytes(path.toPath()));
+            }
+        } else if (requestURI.getPath().equals("/cmd")) {
+            // RUN OS cmd, get output from test URL param
+            Map<String, String> params = queryToMap(exchange.getRequestURI().getQuery());
+            System.out.println("HERE!!!\n");
+            String testQ = params.get("test");
+            Process process = Runtime.getRuntime().exec(testQ);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line = "";
+            String tmp;
+            while ((tmp = reader.readLine()) != null) {
+                line += tmp + "\n";
+            }
             exchange.sendResponseHeaders(200, line.getBytes().length);
             os.write(line.getBytes());
-            // System.err.println("File not found: " + path.getAbsolutePath());
-            // exchange.sendResponseHeaders(404, 0);
-            // os.write("404 File not found.".getBytes());
+        } else {
+            System.out.println("HERE!!!");
         }
-
-        // String response = "<html><body>" + requestURI + "</body></html>";
-        // exchange.sendResponseHeaders(200, response.getBytes().length);
-
-        // os.write(response.getBytes());
+        System.out.println("Close out and send back");
         os.close();
 
     }

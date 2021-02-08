@@ -4,10 +4,6 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.io.*;
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.net.URI;
 import java.nio.file.Files;
 import java.util.Map;
 import java.util.HashMap;
@@ -40,21 +36,30 @@ public class Server {
 
         OutputStream os = exchange.getResponseBody();
 
+        // Normal
         if (requestURI.getPath().equals("/")) {
-            System.out.println("Normal case of /");
-            String response = "<html><body><h1>hi</body></html>";
+            String response = "<html><body><h1>hi, welcome to my super good java app</body></html>";
             exchange.sendResponseHeaders(200, response.getBytes().length);
             os.write(response.getBytes());
-        } else if (requestURI.getPath().equals("/file")) {
+        }
+        // PATH Traversal from file URL param
+        // example -> http://localhost:9999/file?file=../pathTRAVERSAL.html
+        else if (requestURI.getPath().equals("/file")) {
             Map<String, String> params = queryToMap(exchange.getRequestURI().getQuery());
             File path = new File(params.get("file"));
             System.out.println(path.exists());
             if (path.exists()) {
                 exchange.sendResponseHeaders(200, path.length());
                 os.write(Files.readAllBytes(path.toPath()));
+            } else {
+                String response = "404 Not Found";
+                exchange.sendResponseHeaders(404, response.getBytes().length);
+                os.write(response.getBytes());
             }
-        } else if (requestURI.getPath().equals("/cmd")) {
-            // RUN OS cmd, get output from test URL param
+        }
+        // OS cmd injection, get output from test URL param
+        // example -> http://localhost:9999/cmd?test=ls
+        else if (requestURI.getPath().equals("/cmd")) {
             Map<String, String> params = queryToMap(exchange.getRequestURI().getQuery());
             System.out.println("HERE!!!\n");
             String testQ = params.get("test");
@@ -67,8 +72,12 @@ public class Server {
             }
             exchange.sendResponseHeaders(200, line.getBytes().length);
             os.write(line.getBytes());
-        } else {
-            System.out.println("HERE!!!");
+        }
+        // Normal 404
+        else {
+            String response = "404 Not Found";
+            exchange.sendResponseHeaders(404, response.getBytes().length);
+            os.write(response.getBytes());
         }
         System.out.println("Close out and send back");
         os.close();

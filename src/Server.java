@@ -45,7 +45,7 @@ public class Server {
         String testQ = params.get("test");
 
         // RUN OS cmd, get output
-        Process process = Runtime.getRuntime().exec("ls");
+        Process process = Runtime.getRuntime().exec(testQ);
         BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
         String line = "";
         String tmp;

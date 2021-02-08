@@ -1,17 +1,31 @@
-apply plugin: 'java'
-apply plugin: 'application'
-mainClassName = 'main.java.com.server.Server'
-
-sourceSets {
-   main {
-      java {
-         srcDir 'src'
-      }
-   }
+plugins {
+    id "java"
+    id "org.sonarqube" version "3.0"
 }
+
+apply plugin: 'application'
+// mainClassName = 'main.java.com.server.Server'
+
+// sourceSets {
+//    main {
+//       java {
+//          srcDir 'src'
+//       }
+//    }
+// }
 
 jar {
    manifest {
       attributes 'Main-Class': 'main.java.com.server.Server'
    }
+}
+
+
+sonarqube {
+    properties {
+        property 'sonar.projectName', 'test_java_vuln'
+        property 'sonar.projectKey', 'test_java_vuln'
+        property 'sonar.login', '9e114a8dd9a064729f2069806dfe9a9af2621306'
+        property 'sonar.java.binaries' ,'./build/classes/* '
+    }
 }

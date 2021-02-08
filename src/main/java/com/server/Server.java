@@ -44,6 +44,7 @@ public class Server {
             exchange.sendResponseHeaders(200, response.getBytes().length);
             os.write(response.getBytes());
         }
+
         // PATH Traversal from file URL param
         // example -> http://localhost:9999/file?file=../pathTRAVERSAL.html
         else if (requestURI.getPath().equals("/file")) {
@@ -58,6 +59,7 @@ public class Server {
                 os.write(response.getBytes());
             }
         }
+
         // OS cmd injection, get output from test URL param
         // example -> http://localhost:9999/cmd?test=ls
         else if (requestURI.getPath().equals("/cmd")) {
@@ -73,6 +75,31 @@ public class Server {
             exchange.sendResponseHeaders(200, line.getBytes().length);
             os.write(line.getBytes());
         }
+        // XSS , POST data is directly sent back, GET will just make a form to submit 
+        else if (requestURI.getPath().equals("/xss")) {
+
+            if (exchange.getRequestMethod().equals("GET")) {
+                String response = "<html> <form action='/xss' method='POST'> <label for='fname'>Some Form</label><br /> <input type='text' id='test' name='test' value='test' /><br /> <input type='submit' value='Submit' /> </form> </html>";
+                exchange.sendResponseHeaders(200, response.getBytes().length);
+                os.write(response.getBytes());
+            }
+
+            if (exchange.getRequestMethod().equals("POST")) {
+                StringBuilder sb = new StringBuilder();
+                InputStream ios = exchange.getRequestBody();
+                int i;
+                while ((i = ios.read()) != -1) {
+                    sb.append((char) i);
+                }
+
+                String notEncoded = java.net.URLDecoder.decode(sb.toString(), "UTF-8");
+
+                exchange.getResponseHeaders().set("Content-Type", "text/html");
+                String response = "<html><body>" + notEncoded + "</body></html>";
+                exchange.sendResponseHeaders(200, response.getBytes().length);
+                os.write(response.getBytes());
+            }
+        }
         // Normal 404
         else {
             String response = "404 Not Found";
@@ -80,6 +107,7 @@ public class Server {
             os.write(response.getBytes());
         }
         // System.out.println("Close out and send back");
+
         os.close();
 
     }

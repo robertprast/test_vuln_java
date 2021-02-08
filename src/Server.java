@@ -3,6 +3,12 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.URI;
+import java.nio.file.Files;
 
 public class Server {
 
@@ -15,12 +21,27 @@ public class Server {
 
     private static void handleRequest(HttpExchange exchange) throws IOException {
         URI requestURI = exchange.getRequestURI();
-        printRequestInfo(exchange);
-        String response = "<html><body>" + requestURI + "</body></html>";
-        exchange.sendResponseHeaders(200, response.getBytes().length);
+        // printRequestInfo(exchange);
+        String name = new File(requestURI.getPath()).getName();
+        File path = new File("./", name);
         OutputStream os = exchange.getResponseBody();
-        os.write(response.getBytes());
+
+        if (path.exists()) {
+            exchange.sendResponseHeaders(200, path.length());
+            os.write(Files.readAllBytes(path.toPath()));
+        } else {
+            System.err.println("File not found: " + path.getAbsolutePath());
+
+            exchange.sendResponseHeaders(404, 0);
+            os.write("404 File not found.".getBytes());
+        }
+
+        // String response = "<html><body>" + requestURI + "</body></html>";
+        // exchange.sendResponseHeaders(200, response.getBytes().length);
+
+        // os.write(response.getBytes());
         os.close();
+
     }
 
     private static void printRequestInfo(HttpExchange exchange) {

